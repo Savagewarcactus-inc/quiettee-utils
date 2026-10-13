@@ -6,7 +6,7 @@ import com.mojang.blaze3d.buffers.Std140SizeCalculator;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.textures.FilterMode;
 import com.mojang.blaze3d.textures.GpuTextureView;
-import com.mojang.blaze3d.textures.TextureFormat;
+import com.mojang.blaze3d.GpuFormat;
 import com.quiettee.utils.QuietteeUtils;
 import com.quiettee.utils.render.QuietteePipelines;
 import meteordevelopment.meteorclient.events.render.RenderAfterWorldEvent;
@@ -21,8 +21,7 @@ import meteordevelopment.meteorclient.settings.Setting;
 import meteordevelopment.meteorclient.settings.SettingGroup;
 import meteordevelopment.meteorclient.systems.modules.Module;
 import meteordevelopment.orbit.EventHandler;
-import net.minecraft.client.gl.DynamicUniformStorage;
-
+import net.minecraft.client.renderer.DynamicUniformStorage;
 import java.nio.ByteBuffer;
 
 public class HighContrast extends Module {
@@ -122,15 +121,15 @@ public class HighContrast extends Module {
 
     @EventHandler
     private void onRenderAfterWorld(RenderAfterWorldEvent event) {
-        if (mc.world == null) return;
+        if (mc.level == null) return;
 
-        int width = mc.getWindow().getFramebufferWidth();
-        int height = mc.getWindow().getFramebufferHeight();
+        int width = mc.getWindow().getWidth();
+        int height = mc.getWindow().getHeight();
         if (width <= 0 || height <= 0) return;
 
         if (fbo == null || fbo.getWidth(0) != width || fbo.getHeight(0) != height) {
             if (fbo != null) fbo.close();
-            fbo = RenderSystem.getDevice().createTextureView(RenderSystem.getDevice().createTexture("Quiettee Utils - HighContrast", 15, TextureFormat.RGBA8, width, height, 1, 1));
+            fbo = RenderSystem.getDevice().createTextureView(RenderSystem.getDevice().createTexture("Quiettee Utils - HighContrast", 15, GpuFormat.RGBA8_UNORM, width, height, 1, 1));
             dirty = true;
         }
 
@@ -153,14 +152,14 @@ public class HighContrast extends Module {
             .pipeline(QuietteePipelines.POST_CONTRAST)
             .fullscreen()
             .uniform("ContrastData", ubo)
-            .sampler("u_Texture", mc.getFramebuffer().getColorAttachmentView(), RenderSystem.getSamplerCache().get(FilterMode.NEAREST))
+            .sampler("u_Texture", mc.gameRenderer.mainRenderTarget().getColorTextureView(), RenderSystem.getSamplerCache().getClampToEdge(FilterMode.NEAREST))
             .end();
 
         MeshRenderer.begin()
-            .attachments(mc.getFramebuffer())
+            .attachments(mc.gameRenderer.mainRenderTarget())
             .pipeline(MeteorRenderPipelines.BLUR_PASSTHROUGH)
             .fullscreen()
-            .sampler("u_Texture", fbo, RenderSystem.getSamplerCache().get(FilterMode.NEAREST))
+            .sampler("u_Texture", fbo, RenderSystem.getSamplerCache().getClampToEdge(FilterMode.NEAREST))
             .end();
     }
 
@@ -176,7 +175,7 @@ public class HighContrast extends Module {
 
     private static final FixedUniformStorage<ContrastUniformData> UNIFORM_STORAGE = new FixedUniformStorage<>("Quiettee Utils - HighContrast UBO", UNIFORM_SIZE, 1);
 
-    private record ContrastUniformData(float texelSizeX, float texelSizeY, float mode, float threshold, float levels, float invert, float edges, float edgeThreshold) implements DynamicUniformStorage.Uploadable {
+    private record ContrastUniformData(float texelSizeX, float texelSizeY, float mode, float threshold, float levels, float invert, float edges, float edgeThreshold) implements DynamicUniformStorage.DynamicUniform {
         @Override
         public void write(ByteBuffer buffer) {
             Std140Builder.intoBuffer(buffer)

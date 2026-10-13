@@ -8,6 +8,12 @@ base {
     group = properties["maven_group"] as String
 }
 
+java {
+    toolchain {
+        languageVersion.set(JavaLanguageVersion.of(libs.versions.jdk.get().toInt()))
+    }
+}
+
 repositories {
     maven {
         name = "meteor-maven"
@@ -21,10 +27,9 @@ repositories {
 
 dependencies {
     minecraft(libs.minecraft)
-    mappings(variantOf(libs.yarn) { classifier("v2") })
-    modImplementation(libs.fabric.loader)
+    implementation(libs.fabric.loader)
 
-    modImplementation(libs.meteor.client)
+    implementation(libs.meteor.client)
 }
 
 tasks {
@@ -51,13 +56,8 @@ tasks {
         }
     }
 
-    java {
-        sourceCompatibility = JavaVersion.VERSION_21
-        targetCompatibility = JavaVersion.VERSION_21
-    }
-
     withType<JavaCompile> {
         options.encoding = "UTF-8"
-        options.release = 21
+        options.release = libs.versions.jdk.get().toInt()
     }
 }
