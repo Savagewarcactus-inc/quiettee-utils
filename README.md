@@ -22,14 +22,14 @@ Good evening, reader. Quiettee here. You may know me from 6b6t, the books and pu
 
 ## Requirements
 
-- Minecraft 1.21.11 with Fabric Loader 0.16 or newer
-- Meteor Client for 1.21.11
-- Java 21
+- Minecraft 26.2 with Fabric Loader 0.19.3 or newer
+- Meteor Client for 26.2
+- Java 25
 
 ## Install
 
-1. Install Meteor Client for 1.21.11 as usual.
-2. Download `quiettee-utils-<version>+mc1.21.11.jar` from the releases page.
+1. Install Meteor Client for 26.2 as usual.
+2. Download `quiettee-utils-<version>+mc26.2.jar` from the releases page.
 3. Put it in your `mods` folder next to `meteor-client`.
 4. Start the game. The modules live in the **Quiettee Utils** tab of the Meteor GUI.
 
@@ -39,7 +39,7 @@ Good evening, reader. Quiettee here. You may know me from 6b6t, the books and pu
 ./gradlew build
 ```
 
-The jar lands in `build/libs/`. Java 21 is required; the Gradle wrapper downloads everything else.
+The jar lands in `build/libs/`. Java 25 is required; the Gradle wrapper downloads everything else.
 
 The pure-Java helpers behind Lance and MaceSmash have regression programs in `checks/`:
 
